@@ -5,9 +5,9 @@
 #
 
 # Release name
-PRODUCT_RELEASE_NAME := whyred
-
-$(call inherit-product, $(SRC_TARGET_DIR)/product/generic.mk)
+# Inherit from those products. Most specific first.
+$(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/base.mk)
 
 # Device identifier
 PRODUCT_DEVICE := whyred
