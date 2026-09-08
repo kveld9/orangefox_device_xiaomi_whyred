@@ -111,28 +111,27 @@ jobs:
             CHANGELOG=$(git log --no-merges -n 15 --pretty=format:"* %s (%h)")
           fi
 
-          cat > ${GITHUB_WORKSPACE}/release_notes.md <<EOF
-## OrangeFox Recovery for Xiaomi Redmi Note 5 Pro (whyred)
-
-- **Manifest:** \`fox_${{ inputs.MANIFEST_BRANCH }}\`
-- **Build Type:** \`${{ inputs.BUILD_TYPE }}\`
-- **Commit:** \`${{ env.COMMIT_SHA }}\`
-- **Date:** \`${{ env.BUILD_DATE }}\`
-- **Features:** FBE decryption support, Keymaster 3.0, prebuilt 4.19 kernel, battery health HAL service.
-
-### Checksums (SHA-256)
-\`\`\`text
-$(cat ${GITHUB_WORKSPACE}/artifacts/SHA256SUM.txt)
-\`\`\`
-
-### Checksums (MD5)
-\`\`\`text
-$(cat ${GITHUB_WORKSPACE}/artifacts/MD5SUM.txt)
-\`\`\`
-
-### Changelog / Commit History
-${CHANGELOG}
-EOF
+          RN="${GITHUB_WORKSPACE}/release_notes.md"
+          echo "## OrangeFox Recovery for Xiaomi Redmi Note 5 Pro (whyred)" > $RN
+          echo "" >> $RN
+          echo "- **Manifest:** \`fox_${{ inputs.MANIFEST_BRANCH }}\`" >> $RN
+          echo "- **Build Type:** \`${{ inputs.BUILD_TYPE }}\`" >> $RN
+          echo "- **Commit:** \`${{ env.COMMIT_SHA }}\`" >> $RN
+          echo "- **Date:** \`${{ env.BUILD_DATE }}\`" >> $RN
+          echo "- **Features:** FBE decryption support, Keymaster 3.0, prebuilt 4.19 kernel, battery health HAL service." >> $RN
+          echo "" >> $RN
+          echo "### Checksums (SHA-256)" >> $RN
+          echo '```text' >> $RN
+          cat ${GITHUB_WORKSPACE}/artifacts/SHA256SUM.txt >> $RN
+          echo '```' >> $RN
+          echo "" >> $RN
+          echo "### Checksums (MD5)" >> $RN
+          echo '```text' >> $RN
+          cat ${GITHUB_WORKSPACE}/artifacts/MD5SUM.txt >> $RN
+          echo '```' >> $RN
+          echo "" >> $RN
+          echo "### Changelog / Commit History" >> $RN
+          echo "${CHANGELOG}" >> $RN
 
       - name: Upload Artifacts to GitHub Actions
         uses: actions/upload-artifact@v4
