@@ -1,0 +1,122 @@
+name: OrangeFox - Build Recovery
+
+on:
+  workflow_dispatch:
+    inputs:
+      MANIFEST_BRANCH:
+        description: 'OrangeFox Manifest Branch'
+        required: true
+        default: '12.1'
+        type: choice
+        options:
+          - '12.1'
+          - '11.0'
+      BUILD_TYPE:
+        description: 'OrangeFox Build Type'
+        required: true
+        default: 'Unofficial'
+        type: choice
+        options:
+          - 'Unofficial'
+          - 'Beta'
+          - 'Release'
+
+jobs:
+  build:
+    name: Build OrangeFox for whyred
+    runs-on: ubuntu-22.04
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Device Tree
+        uses: actions/checkout@v4
+        with:
+          path: device/xiaomi/whyred
+
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: false
+
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 12
+
+      - name: Setup Build Environment
+        run: |
+          sudo apt update
+          sudo apt install -y aria2 git python3 python2 curl rsync
+          git clone https://gitlab.com/OrangeFox/misc/scripts.git -b master /tmp/fox_scripts
+          cd /tmp/fox_scripts
+          sudo bash setup/android_build_env.sh
+
+      - name: Sync OrangeFox Manifest
+        run: |
+          mkdir -p ${GITHUB_WORKSPACE}/OrangeFox
+          cd ${GITHUB_WORKSPACE}/OrangeFox
+          git config --global user.name "kveld9"
+          git config --global user.email "kveld9@users.noreply.github.com"
+          git clone https://gitlab.com/OrangeFox/sync.git -b master
+          cd sync
+          ./orangefox_sync.sh --branch ${{ inputs.MANIFEST_BRANCH }} --path ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}
+
+      - name: Integrate Device Tree
+        run: |
+          TARGET_DIR="${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/device/xiaomi/whyred"
+          mkdir -p "${TARGET_DIR}"
+          cp -r ${GITHUB_WORKSPACE}/device/xiaomi/whyred/* "${TARGET_DIR}/"
+          cd "${TARGET_DIR}"
+          echo "COMMIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Compile OrangeFox Recovery
+        run: |
+          cd ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}
+          source build/envsetup.sh
+          export ALLOW_MISSING_DEPENDENCIES=true
+          export FOX_BUILD_DEVICE=whyred
+          export FOX_BUILD_TYPE=${{ inputs.BUILD_TYPE }}
+          export LC_ALL="C"
+          lunch twrp_whyred-eng || lunch omni_whyred-eng
+          mka adbd recoveryimage
+
+      - name: Prepare Release Artifacts
+        run: |
+          OUT_DIR="${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/out/target/product/whyred"
+          echo "BUILD_DATE=$(date +%Y%m%d)" >> $GITHUB_ENV
+          mkdir -p ${GITHUB_WORKSPACE}/artifacts
+          cp ${OUT_DIR}/OrangeFox*.img ${GITHUB_WORKSPACE}/artifacts/ || true
+          cp ${OUT_DIR}/OrangeFox*.zip ${GITHUB_WORKSPACE}/artifacts/ || true
+          cd ${GITHUB_WORKSPACE}/artifacts
+          ls -la
+          sha256sum * > SHA256SUM.txt || true
+
+      - name: Upload Artifacts to GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrangeFox-whyred-${{ env.BUILD_DATE }}
+          path: ${{ github.workspace }}/artifacts/*
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          files: ${{ github.workspace }}/artifacts/*
+          name: OrangeFox Recovery ${{ inputs.BUILD_TYPE }} for whyred (${{ env.BUILD_DATE }})
+          tag_name: whyred-${{ env.BUILD_DATE }}-${{ env.COMMIT_SHA }}
+          body: |
+            ## OrangeFox Recovery for Xiaomi Redmi Note 5 Pro (whyred)
+            - **Manifest:** `fox_${{ inputs.MANIFEST_BRANCH }}`
+            - **Build Type:** `${{ inputs.BUILD_TYPE }}`
+            - **Commit:** `${{ env.COMMIT_SHA }}`
+            - **Date:** `${{ env.BUILD_DATE }}`
+            - **Features:** FBE decryption support, Keymaster 3.0, prebuilt 4.19 kernel.
