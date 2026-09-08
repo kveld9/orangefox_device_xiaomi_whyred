@@ -1,5 +1,15 @@
+# Editor & OS artifacts
 *~
 *.swp
 .DS_Store
 .vscode/
 .idea/
+
+# Android & OrangeFox build outputs
+out/
+artifacts/
+OrangeFox/
+*.img
+*.zip
+!prebuilt/*
+
