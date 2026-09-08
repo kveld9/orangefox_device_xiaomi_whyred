@@ -86,8 +86,8 @@ if [ "$1" = "$FDEVICE" -o "$FOX_BUILD_DEVICE" = "$FDEVICE" ]; then
 
     # R11 settings
     export FOX_R11=1
-else
-    if [ -z "$FOX_BUILD_DEVICE" -a -z "$BASH_SOURCE" ]; then
-        echo "I: This script requires bash. Not processing $FDEVICE $(basename $0)"
-    fi
 fi
+
+add_lunch_combo twrp_whyred-eng
+add_lunch_combo twrp_whyred-userdebug
+add_lunch_combo omni_whyred-eng
