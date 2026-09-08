@@ -35,6 +35,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: device/xiaomi/whyred
+          fetch-depth: 0
 
       - name: Free Disk Space
         uses: jlumbroso/free-disk-space@main
@@ -90,16 +91,48 @@ jobs:
           lunch twrp_whyred-eng || lunch omni_whyred-eng
           mka adbd recoveryimage
 
-      - name: Prepare Release Artifacts
+      - name: Prepare Release Artifacts & Changelog
         run: |
           OUT_DIR="${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/out/target/product/whyred"
           echo "BUILD_DATE=$(date +%Y%m%d)" >> $GITHUB_ENV
           mkdir -p ${GITHUB_WORKSPACE}/artifacts
           cp ${OUT_DIR}/OrangeFox*.img ${GITHUB_WORKSPACE}/artifacts/ || true
           cp ${OUT_DIR}/OrangeFox*.zip ${GITHUB_WORKSPACE}/artifacts/ || true
+
           cd ${GITHUB_WORKSPACE}/artifacts
-          ls -la
-          sha256sum * > SHA256SUM.txt || true
+          sha256sum OrangeFox*.img OrangeFox*.zip > SHA256SUM.txt
+          md5sum OrangeFox*.img OrangeFox*.zip > MD5SUM.txt
+
+          cd ${GITHUB_WORKSPACE}/device/xiaomi/whyred
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || true)
+          if [ -n "$PREV_TAG" ] && [ $(git rev-list --count ${PREV_TAG}..HEAD) -gt 0 ]; then
+            CHANGELOG=$(git log --no-merges --pretty=format:"* %s (%h)" ${PREV_TAG}..HEAD)
+          else
+            CHANGELOG=$(git log --no-merges -n 15 --pretty=format:"* %s (%h)")
+          fi
+
+          cat > ${GITHUB_WORKSPACE}/release_notes.md <<EOF
+## OrangeFox Recovery for Xiaomi Redmi Note 5 Pro (whyred)
+
+- **Manifest:** \`fox_${{ inputs.MANIFEST_BRANCH }}\`
+- **Build Type:** \`${{ inputs.BUILD_TYPE }}\`
+- **Commit:** \`${{ env.COMMIT_SHA }}\`
+- **Date:** \`${{ env.BUILD_DATE }}\`
+- **Features:** FBE decryption support, Keymaster 3.0, prebuilt 4.19 kernel, battery health HAL service.
+
+### Checksums (SHA-256)
+\`\`\`text
+$(cat ${GITHUB_WORKSPACE}/artifacts/SHA256SUM.txt)
+\`\`\`
+
+### Checksums (MD5)
+\`\`\`text
+$(cat ${GITHUB_WORKSPACE}/artifacts/MD5SUM.txt)
+\`\`\`
+
+### Changelog / Commit History
+${CHANGELOG}
+EOF
 
       - name: Upload Artifacts to GitHub Actions
         uses: actions/upload-artifact@v4
@@ -114,10 +147,4 @@ jobs:
           files: ${{ github.workspace }}/artifacts/*
           name: OrangeFox Recovery ${{ inputs.BUILD_TYPE }} for whyred (${{ env.BUILD_DATE }})
           tag_name: whyred-${{ env.BUILD_DATE }}-${{ env.COMMIT_SHA }}
-          body: |
-            ## OrangeFox Recovery for Xiaomi Redmi Note 5 Pro (whyred)
-            - **Manifest:** `fox_${{ inputs.MANIFEST_BRANCH }}`
-            - **Build Type:** `${{ inputs.BUILD_TYPE }}`
-            - **Commit:** `${{ env.COMMIT_SHA }}`
-            - **Date:** `${{ env.BUILD_DATE }}`
-            - **Features:** FBE decryption support, Keymaster 3.0, prebuilt 4.19 kernel.
+          body_path: ${{ github.workspace }}/release_notes.md
