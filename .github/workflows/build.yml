@@ -75,17 +75,18 @@ jobs:
           TARGET_DIR="${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/device/xiaomi/whyred"
           mkdir -p "${TARGET_DIR}"
           cp -r ${GITHUB_WORKSPACE}/device/xiaomi/whyred/* "${TARGET_DIR}/"
-          cd "${TARGET_DIR}"
-          echo "COMMIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "COMMIT_SHA=$(git -C ${GITHUB_WORKSPACE}/device/xiaomi/whyred rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Compile OrangeFox Recovery
         run: |
           cd ${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}
-          source build/envsetup.sh
           export ALLOW_MISSING_DEPENDENCIES=true
           export FOX_BUILD_DEVICE=whyred
           export FOX_BUILD_TYPE=${{ inputs.BUILD_TYPE }}
           export LC_ALL="C"
+          set +e
+          source build/envsetup.sh
+          set -e
           lunch twrp_whyred-eng || lunch omni_whyred-eng
           mka adbd recoveryimage
 
