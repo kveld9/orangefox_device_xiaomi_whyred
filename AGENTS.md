@@ -92,7 +92,7 @@ Never run any of the following commands without explicit user authorization:
   - Check latest commit (`git log -1 --oneline`).
   - Push only to the verified tracking branch (`main`).
 - **Missing Remote Protocol**:
-  If a modified repository lacks the required personal remote (`kveld9/*`):
+  If a modified repository lacks the required personal remote fork:
   - Stop before pushing.
   - Report the missing remote to the user.
   - Request authorization before creating or changing repository remotes.
@@ -101,9 +101,9 @@ Never run any of the following commands without explicit user authorization:
 
 ## 9. Repository Topology & Remote Mapping
 - **Recovery Device Tree** (`.`):
-  - Remote: `git@github.com:kveld9/orangefox_device_xiaomi_whyred.git` (`main`)
+  - Remote: `origin` (`main`)
   - Scope: OrangeFox / TWRP recovery device tree, makefiles, root ramdisk, vendorsetup, prebuilts, and GitHub Actions build workflow.
-- **ROM Workspace Reference** (`/home/kveld/Documentos/repos/lineageos-whyred`):
+- **ROM Workspace Reference** (`../lineageos-whyred`):
   - Scope: Reference LineageOS 21 (Android 14) kernel source (4.19), device configurations, and proprietary blobs for HAL alignment.
 
 ---
