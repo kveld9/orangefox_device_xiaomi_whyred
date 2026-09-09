@@ -94,7 +94,8 @@ jobs:
       - name: Prepare Release Artifacts & Changelog
         run: |
           OUT_DIR="${GITHUB_WORKSPACE}/OrangeFox/fox_${{ inputs.MANIFEST_BRANCH }}/out/target/product/whyred"
-          echo "BUILD_DATE=$(date +%Y%m%d)" >> $GITHUB_ENV
+          BUILD_DATE=$(date +%Y%m%d)
+          echo "BUILD_DATE=${BUILD_DATE}" >> $GITHUB_ENV
           mkdir -p ${GITHUB_WORKSPACE}/artifacts
           cp ${OUT_DIR}/OrangeFox*.img ${GITHUB_WORKSPACE}/artifacts/ || true
           cp ${OUT_DIR}/OrangeFox*.zip ${GITHUB_WORKSPACE}/artifacts/ || true
@@ -117,7 +118,7 @@ jobs:
           echo "- **Manifest:** \`fox_${{ inputs.MANIFEST_BRANCH }}\`" >> $RN
           echo "- **Build Type:** \`${{ inputs.BUILD_TYPE }}\`" >> $RN
           echo "- **Commit:** \`${{ env.COMMIT_SHA }}\`" >> $RN
-          echo "- **Date:** \`${{ env.BUILD_DATE }}\`" >> $RN
+          echo "- **Date:** \`${BUILD_DATE}\`" >> $RN
           echo "- **Features:** FBE decryption support, Keymaster 3.0, prebuilt 4.19 kernel, battery health HAL service." >> $RN
           echo "" >> $RN
           echo "### Checksums (SHA-256)" >> $RN
