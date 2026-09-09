@@ -4,25 +4,15 @@ This repository contains the recovery device tree to compile **OrangeFox Recover
 
 ---
 
-## Device Specifications
+## Downloads
 
-| Feature | Specification |
-| :--- | :--- |
-| **Chipset** | Qualcomm SDM660 Snapdragon 660 |
-| **CPU** | Octa-core (4x2.2 GHz Kryo 260 Gold & 4x1.8 GHz Kryo 260 Silver) |
-| **GPU** | Adreno 512 / 509 |
-| **Display** | 2160 x 1080 pixels, 18:9 ratio (~403 ppi) |
-| **Storage** | 32 GB / 64 GB eMMC 5.1 |
-| **Battery** | Li-Po 4000 mAh |
-| **Architecture** | ARM64 (`arm64-v8a`) |
-| **Partition Scheme** | Non-dynamic, legacy eMMC (dedicated `/recovery` partition, 64 MiB, A-only) |
-| **Encryption Support** | File-Based Encryption (FBE) via Keymaster 3.0 & Gatekeeper 1.0 |
+Precompiled recovery packages and flashable ZIP files are available under the [Releases](../../releases) tab.
 
 ---
 
 ## Features & Highlights
 
-- **Upstream OrangeFox R12.0 Engine:** Built on the latest official OrangeFox `fox_12.1` manifest (with `fox_14.1` experimental option).
+- **Upstream OrangeFox R12.0 Engine:** Built on the official OrangeFox `fox_12.1` manifest (with `fox_14.1` experimental option).
 - **FBE Decryption Support:** Tailored for modern Android 11, 12, 13, and 14 ROMs (including LineageOS 21).
 - **Hardware Validated:**
   - Full touchscreen response across panel variants (Tianma, EBBG, Shenchao).
@@ -36,6 +26,15 @@ This repository contains the recovery device tree to compile **OrangeFox Recover
 
 ## Installation & Flashing Guide
 
+### Prerequisites
+
+Before proceeding, ensure the following requirements are met:
+- **Device:** Xiaomi Redmi Note 5 Pro / AI (codename: `whyred`).
+- **Unlocked Bootloader:** The device bootloader must be officially unlocked via the Xiaomi Mi Unlock tool.
+- **Battery:** At least 50% battery level.
+- **PC Tools:** Android SDK Platform-Tools (`adb` and `fastboot`) installed and accessible from the terminal.
+- **USB Cable:** Micro-USB data cable.
+
 > [!IMPORTANT]
 > **Qualcomm `aboot` Fastboot Buffer Limit**:  
 > The Xiaomi bootloader on *whyred* has a hardcoded RAM download buffer limit of **~36 MiB** in Fastboot mode. Because modern Android 12.1 recovery images exceed this threshold (~37.8 MiB), running `fastboot flash recovery OrangeFox-*.img` will fail with:  
@@ -46,25 +45,32 @@ This repository contains the recovery device tree to compile **OrangeFox Recover
 
 If your device already has TWRP or an older OrangeFox installed:
 
-1. Boot into your current recovery (`Power + Volume Up`).
-2. Connect your phone to your PC.
-3. Install via `adb sideload`:
+1. Download the latest `OrangeFox-*.zip` release from the [Releases](../../releases) section.
+2. Boot into your current recovery (`Power + Volume Up`).
+3. Connect your phone to your PC via USB.
+4. Install via `adb sideload`:
    ```bash
-   adb sideload OrangeFox-R12.0_FBE-Unofficial-whyred.zip
+   adb sideload OrangeFox-*.zip
    ```
-   *Alternatively*, transfer the ZIP to the internal storage or `/tmp` and flash it from the recovery GUI.
-4. The installer script will automatically flash the 64 MiB eMMC block and reboot into the new OrangeFox Recovery.
+   *Alternatively*, transfer the ZIP file to your internal storage, micro SD card, or `/tmp` and flash it directly from the recovery user interface.
+5. The installer script will automatically flash the 64 MiB eMMC block and reboot into the new OrangeFox Recovery.
 
 ### Method 2: From Fastboot (Clean Slate / Rescue)
 
-If your device has no working recovery installed:
+If your device currently has no functional custom recovery installed:
 
-1. Flash a compact recovery image (< 36 MiB, such as OrangeFox R11.1 base) via Fastboot:
+1. Obtain a legacy lightweight recovery image under 36 MiB (such as an official older OrangeFox R11.1 release or official TWRP 3.x image for whyred).
+2. Boot your phone into Fastboot mode (`Power + Volume Down`) and connect it to your PC.
+3. Flash the compact image to gain temporary recovery access:
    ```bash
-   fastboot flash recovery recovery_compact.img
+   fastboot flash recovery legacy_compact_recovery.img
    fastboot reboot recovery
    ```
-2. Once booted into recovery, flash the latest `OrangeFox-R12.0_FBE-Unofficial-whyred.zip` following **Method 1**.
+4. Once booted into temporary recovery, install the latest `OrangeFox-*.zip` following **Method 1** above. This writes directly to the 64 MiB eMMC partition without Fastboot buffer constraints.
+
+> [!TIP]
+> **Recommended Partition Backups**:  
+> After booting into recovery, navigate to **Backup** and create a backup of **EFS** (`modemst1`, `modemst2`, `fsc`, `fsg`) and **Persist** to external storage (Micro SD card or USB-OTG). This protects your device IMEI, MAC addresses, and sensor calibrations against accidental loss.
 
 > [!TIP]
 > **AMD Ryzen USB 3.x Fastboot Communication**:  
@@ -113,10 +119,10 @@ git clone https://github.com/kveld9/orangefox_device_xiaomi_whyred.git device/xi
 ### 4. Build
 ```bash
 cd ~/OrangeFox/fox_12.1
-source build/envsetup.sh
 export ALLOW_MISSING_DEPENDENCIES=true
 export FOX_BUILD_DEVICE=whyred
 export LC_ALL="C"
+source build/envsetup.sh
 
 lunch twrp_whyred-eng
 mka adbd recoveryimage
