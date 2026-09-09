@@ -10,8 +10,7 @@
 /system_image		emmc    /dev/block/bootdevice/by-name/system				flags=backup=1;flashimg=1
 /vendor			ext4    /dev/block/bootdevice/by-name/vendor                            flags=display="Vendor";backup=1;wipeingui
 /vendor_image		emmc    /dev/block/bootdevice/by-name/vendor				flags=backup=1;flashimg=1
-#/data			ext4    /dev/block/bootdevice/by-name/userdata                          flags=fileencryption=ice
-/data                   ext4    /dev/block/bootdevice/by-name/userdata                          flags=encryptable=footer;length=-16384;fileencryption=ice;backup=1;display="User Data"
+/data                   f2fs    /dev/block/bootdevice/by-name/userdata                          flags=fileencryption=ice;backup=1;display="User Data"
 
 /storage		ext4	/data/media/0							flags=display="Internal Storage";usermrf;backup=1;fsflags="bind";removable
 
