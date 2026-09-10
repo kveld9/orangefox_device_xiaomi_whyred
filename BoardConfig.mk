@@ -57,6 +57,7 @@ BOARD_KERNEL_TAGS_OFFSET := 0x00000100
 BOARD_RAMDISK_OFFSET     := 0x02000000
 BOARD_MKBOOTIMG_ARGS     := --ramdisk_offset $(BOARD_RAMDISK_OFFSET) --tags_offset $(BOARD_KERNEL_TAGS_OFFSET)
 TARGET_PREBUILT_KERNEL := device/xiaomi/whyred/prebuilt/Image.gz-dtb
+TARGET_RECOVERY_FSTAB := device/xiaomi/whyred/recovery.fstab
 
 # System as root
 #BOARD_BUILD_SYSTEM_ROOT_IMAGE := true
