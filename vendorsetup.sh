@@ -86,6 +86,32 @@ if [ "$1" = "$FDEVICE" -o "$FOX_BUILD_DEVICE" = "$FDEVICE" ]; then
 
     # R11 settings
     export FOX_R11=1
+
+    # Patch OrangeFox fscrypt and partitionmanager for whyred LineageOS 21 FBE decryption
+    fox_patch_fbe_source() {
+        local TOP="$(gettop 2>/dev/null || pwd)"
+        local FSC_CPP="$TOP/bootable/recovery/crypto/fscrypt/fscrypt.cpp"
+        local PM_CPP="$TOP/bootable/recovery/partitionmanager.cpp"
+
+        if [ -f "$FSC_CPP" ]; then
+            if ! grep -q "fox_sync_keystore.sh" "$FSC_CPP"; then
+                echo "-- OrangeFox whyred: Patching $FSC_CPP with keystore2 sync..."
+                sed -i '/fscrypt_init_user0/!b;n;a\    system("/sbin/fox_sync_keystore.sh");' "$FSC_CPP"
+            fi
+            if ! grep -q "Decrypt_DE();" "$FSC_CPP"; then
+                echo "-- OrangeFox whyred: Patching Decrypt_User in $FSC_CPP to call Decrypt_DE()..."
+                sed -i '/bool Decrypt_User/!b;n;a\    Decrypt_DE();' "$FSC_CPP"
+            fi
+        fi
+
+        if [ -f "$PM_CPP" ]; then
+            if ! grep -q "whyred: preserve superblock master keys" "$PM_CPP"; then
+                echo "-- OrangeFox whyred: Patching $PM_CPP to preserve /data master keys..."
+                sed -i '/Unmount_Main_Partitions.*{/a\    // whyred: preserve superblock master keys for FBE DE\n    return 0;' "$PM_CPP"
+            fi
+        fi
+    }
+    fox_patch_fbe_source
 fi
 
 add_lunch_combo twrp_whyred-eng

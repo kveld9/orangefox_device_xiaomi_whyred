@@ -11,6 +11,12 @@ on init
 on fs
     wait /dev/block/platform/soc/${ro.boot.bootdevice}
     symlink /dev/block/platform/soc/${ro.boot.bootdevice} /dev/block/bootdevice
+    symlink /dev/mmcblk0rpmb /dev/block/mmcblk0rpmb
+    symlink /firmware /vendor/firmware_mnt
+    mkdir /mnt/vendor 0755 root root
+    mkdir /mnt/vendor/persist 0755 root root
+    mount ext4 /dev/block/bootdevice/by-name/persist /mnt/vendor/persist nosuid nodev barrier=1
+    setprop persist.vendor.delta_time.enable true
     install_keyring
     mount vfat /dev/block/bootdevice/by-name/modem /firmware ro shortname=lower uid=1000 gid=1000 dmask=227 fmask=337
     setprop crypto.ready 1
@@ -18,6 +24,14 @@ on fs
 service sbinqseecomd /sbin/qseecomd
     user root
     group root
+    setenv LD_LIBRARY_PATH /vendor/lib64:/system/lib64:/sbin
+    disabled
+    seclabel u:r:recovery:s0
+
+service time_daemon /sbin/time_daemon
+    user root
+    group root
+    setenv LD_LIBRARY_PATH /vendor/lib64:/system/lib64:/sbin
     disabled
     seclabel u:r:recovery:s0
 
@@ -74,6 +88,7 @@ on boot
 
 on property:crypto.ready=0
     stop sbinqseecomd
+    stop time_daemon
     stop keymaster-3-0
     stop gatekeeper-1-0
     stop hwservicemanager
@@ -84,6 +99,7 @@ on property:crypto.ready=1
     start sbinqseecomd
 
 on property:vendor.sys.listeners.registered=true
+    start time_daemon
     start hwservicemanager
     start keymaster-3-0
     start gatekeeper-1-0
