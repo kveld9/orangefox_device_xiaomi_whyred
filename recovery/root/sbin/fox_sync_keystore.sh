@@ -12,3 +12,6 @@ if [ -f "/data/misc/keystore/persistent.sqlite" ]; then
         sleep 0.8
     fi
 fi
+
+# Stop crypto daemons once decryption is complete so /vendor is released
+setprop crypto.ready 0
