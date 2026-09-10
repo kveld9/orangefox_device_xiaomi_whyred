@@ -51,12 +51,14 @@ service keystore /sbin/keystore /tmp/misc/keystore
 service gatekeeper-1-0 /sbin/android.hardware.gatekeeper@1.0-service
     user root
     group root
+    setenv LD_LIBRARY_PATH /vendor/lib64:/system/lib64:/sbin
     disabled
     seclabel u:r:recovery:s0
 
 service keymaster-3-0 /sbin/android.hardware.keymaster@3.0-service
     user root
     group root
+    setenv LD_LIBRARY_PATH /vendor/lib64:/system/lib64:/sbin
     disabled
     seclabel u:r:recovery:s0
 
