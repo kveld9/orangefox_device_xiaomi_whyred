@@ -87,10 +87,11 @@ if [ "$1" = "$FDEVICE" -o "$FOX_BUILD_DEVICE" = "$FDEVICE" ]; then
     # R11 settings
     export FOX_R11=1
 
-    # Patch OrangeFox fscrypt and partitionmanager for whyred LineageOS 21 FBE decryption
+    # Patch OrangeFox fscrypt for whyred LineageOS 21 FBE decryption
     fox_patch_fbe_source() {
         local TOP="$(gettop 2>/dev/null || pwd)"
         local FSC_CPP="$TOP/bootable/recovery/crypto/fscrypt/fscrypt.cpp"
+
         local PM_CPP="$TOP/bootable/recovery/partitionmanager.cpp"
 
         if [ -f "$FSC_CPP" ]; then
@@ -108,10 +109,6 @@ if [ "$1" = "$FDEVICE" -o "$FOX_BUILD_DEVICE" = "$FDEVICE" ]; then
             if ! grep -q "whyred: preserve superblock master keys" "$PM_CPP"; then
                 echo "-- OrangeFox whyred: Patching $PM_CPP to preserve /data master keys..."
                 sed -i '/Unmount_Main_Partitions.*{/a\    // whyred: preserve superblock master keys for FBE DE\n    return 0;' "$PM_CPP"
-            fi
-            if ! grep -q "whyred: release crypto daemons before unmounting vendor" "$PM_CPP"; then
-                echo "-- OrangeFox whyred: Patching $PM_CPP to release crypto daemons on vendor unmount..."
-                sed -i '/UnMount_By_Path.*{/a\    // whyred: release crypto daemons before unmounting vendor\n    if (Path == "/vendor" || Path == "/vendor_image") {\n        system("setprop crypto.ready 0");\n        usleep(150000);\n    }' "$PM_CPP"
             fi
         fi
     }
