@@ -1,0 +1,4 @@
+prebuilt/** linguist-vendored=true
+recovery/root/** linguist-vendored=true
+*.md linguist-documentation=true
+.github/** linguist-vendored=true
