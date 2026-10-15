@@ -80,6 +80,9 @@ If your device currently has no functional custom recovery installed:
 
 ## Building via GitHub Actions (Recommended)
 
+> [!TIP]
+> For a detailed flag and option reference across all recovery, ROM, and synchronization scripts, see [Command & Automation Reference Guide](docs/COMMANDS.md).
+
 1. Navigate to the **Actions** tab of this repository.
 2. Select **OrangeFox - Build Recovery**.
 3. Click **Run workflow**:
