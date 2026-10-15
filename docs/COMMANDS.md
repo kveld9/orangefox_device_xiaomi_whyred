@@ -39,27 +39,12 @@ gh workflow run build.yml -f MANIFEST_BRANCH="14.1" -f BUILD_TYPE="Beta"
 
 ### 1.2 Local OrangeFox Recovery Compilation
 
-When compiling locally on a Linux workstation:
+For full workstation setup and build prerequisites, refer to the authoritative source in [`README.md` (Building Locally)](../README.md#building-locally).
 
-```bash
-# 1. Sync official OrangeFox manifest
-mkdir -p ~/OrangeFox/fox_12.1 && cd ~/OrangeFox
-git clone https://gitlab.com/OrangeFox/sync.git -b master
-cd sync
-./orangefox_sync.sh --branch 12.1 --path ~/OrangeFox/fox_12.1
-
-# 2. Place device tree
-cd ~/OrangeFox/fox_12.1
-git clone https://github.com/kveld9/orangefox_device_xiaomi_whyred.git device/xiaomi/whyred
-
-# 3. Setup environment and build
-export ALLOW_MISSING_DEPENDENCIES=true
-export FOX_BUILD_DEVICE=whyred
-export LC_ALL="C"
-source build/envsetup.sh
-lunch twrp_whyred-eng
-mka adbd recoveryimage
-```
+Key environment variables used during local compilation:
+* `ALLOW_MISSING_DEPENDENCIES=true`: Enables compilation against the minimal OrangeFox manifest without full Android platform tree.
+* `FOX_BUILD_DEVICE=whyred`: Declares the target device codename for OrangeFox build engine.
+* `LC_ALL="C"`: Enforces deterministic build locale.
 
 ---
 
