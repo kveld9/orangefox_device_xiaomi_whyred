@@ -37,22 +37,7 @@ gh workflow run build.yml -f MANIFEST_BRANCH="14.1" -f BUILD_TYPE="Beta"
 5. Sinks environmental flags (`FOX_BUILD_DEVICE=whyred`, `ALLOW_MISSING_DEPENDENCIES=true`) and compiles `mka adbd recoveryimage`.
 6. Produces `OrangeFox-*.img` and `OrangeFox-*.zip`, generates SHA-256 and MD5 checksums, compiles git changelog, and creates a tagged GitHub Release automatically.
 
----
-
-### 1.2 Telegram Bot Automation (`Release Watcher`)
-
-The Telegram bot linked to the `release-watcher` Cloudflare Worker and GitHub repository dispatches cloud builds on demand:
-
-| Command | Arguments | Description |
-|---|---|---|
-| `/build_fox` | None | Dispatches `build.yml` with `MANIFEST_BRANCH=12.1` and `BUILD_TYPE=Unofficial`. |
-| `/build_fox 14.1` | `14.1` | Dispatches `build.yml` targeting experimental `fox_14.1` branch. |
-| `/check` | None | Forces immediate check of upstream repositories and monitored APKs. |
-| `/list` | None | Lists monitored repositories, latest tracked commit hashes, and versions. |
-
----
-
-### 1.3 Local OrangeFox Recovery Compilation
+### 1.2 Local OrangeFox Recovery Compilation
 
 When compiling locally on a Linux workstation:
 
