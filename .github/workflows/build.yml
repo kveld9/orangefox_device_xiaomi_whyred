@@ -135,7 +135,7 @@ jobs:
           echo "${CHANGELOG}" >> $RN
 
       - name: Upload Artifacts to GitHub Actions
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: OrangeFox-whyred-${{ env.BUILD_DATE }}
           path: ${{ github.workspace }}/artifacts/*
